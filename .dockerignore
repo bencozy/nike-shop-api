@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.git
+.gitignore
+*.md
+.env
+.env.*
+.DS_Store
+test
+*.spec.ts
+.oxlintrc.json
+.prettierrc
+vitest.config.ts
+vitest.config.e2e.ts

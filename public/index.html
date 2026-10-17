@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nike Shop</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --ink: #111;
+      --muted: #666;
+      --line: #e5e5e5;
+      --accent: #111;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      background: #111;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-link, .cart-btn {
+      background: #fff;
+      color: #111;
+      border: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .nav-link.ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: #eee;
+    }
+    .card-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .price {
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .chip {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.45rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+    label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 0.35rem;
+    }
+    select, input {
+      width: 100%;
+      padding: 0.45rem;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-top: 0.2rem;
+    }
+    .add-btn {
+      margin-top: auto;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .add-btn:hover { opacity: 0.9; }
+    .panel {
+      display: none;
+      margin-top: 1.5rem;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .panel.open { display: block; }
+    .panel h2 { margin-top: 0; }
+    .cart-row {
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .cart-row img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .remove {
+      background: transparent;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      cursor: pointer;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .form-grid .full { grid-column: 1 / -1; }
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .primary, .secondary {
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .primary { background: #111; color: #fff; }
+    .secondary { background: #eee; color: #111; }
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: #111;
+      color: #fff;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    .toast.show { display: block; }
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nike Shop</h1>
+    <div class="header-actions">
+      <a class="nav-link ghost" href="/openapi.html">OpenAPI JSON</a>
+      <button class="cart-btn" id="cartToggle">Cart (0)</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid" id="products"></section>
+
+    <section class="panel" id="cartPanel">
+      <h2>Your cart</h2>
+      <div id="cartItems"></div>
+      <p id="cartSubtotal" class="price"></p>
+
+      <h2>Shipping address</h2>
+      <form id="shippingForm" class="form-grid">
+        <div class="full">
+          <label>Full name</label>
+          <input name="fullName" required />
+        </div>
+        <div class="full">
+          <label>Address line 1</label>
+          <input name="line1" required />
+        </div>
+        <div class="full">
+          <label>Address line 2</label>
+          <input name="line2" />
+        </div>
+        <div>
+          <label>City</label>
+          <input name="city" required />
+        </div>
+        <div>
+          <label>State</label>
+          <input name="state" required />
+        </div>
+        <div>
+          <label>Postal code</label>
+          <input name="postalCode" required />
+        </div>
+        <div>
+          <label>Country</label>
+          <input name="country" value="US" required />
+        </div>
+        <div class="full">
+          <label>Phone</label>
+          <input name="phone" />
+        </div>
+      </form>
+
+      <div class="actions">
+        <button type="button" class="secondary" id="saveShipping">Save shipping</button>
+        <button type="button" class="primary" id="purchaseBtn">Purchase (mock)</button>
+      </div>
+      <pre id="orderResult" style="white-space:pre-wrap;font-size:0.85rem;"></pre>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const api = '';
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    async function loadProducts() {
+      const products = await fetch(`${api}/products`).then((r) => r.json());
+      const root = document.getElementById('products');
+      root.innerHTML = products.map((p) => `
+        <article class="card" data-id="${p.id}">
+          <img src="${p.image}" alt="${p.name}" loading="lazy" />
+          <div class="card-body">
+            <h2>${p.name}</h2>
+            <div class="price">$${p.price.toFixed(2)}</div>
+            <div class="meta">${p.category}</div>
+            <div class="meta">${p.description.slice(0, 90)}…</div>
+            <div>
+              <div class="meta">Colors</div>
+              <div class="chips">${p.colors.map((c) => `<span class="chip">${c}</span>`).join('')}</div>
+            </div>
+            <div>
+              <div class="meta">Sizes</div>
+              <div class="chips">${p.sizes.map((s) => `<span class="chip">${s}</span>`).join('')}</div>
+            </div>
+            <label>Size
+              <select class="size">${p.sizes.map((s) => `<option value="${s}">${s}</option>`).join('')}</select>
+            </label>
+            <label>Color
+              <select class="color">${p.colors.map((c) => `<option value="${c}">${c}</option>`).join('')}</select>
+            </label>
+            <button class="add-btn" type="button">Add to cart</button>
+          </div>
+        </article>
+      `).join('');
+
+      root.querySelectorAll('.add-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const card = btn.closest('.card');
+          const productId = card.dataset.id;
+          const size = Number(card.querySelector('.size').value);
+          const color = card.querySelector('.color').value;
+          const res = await fetch(`${api}/cart/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId, size, color, quantity: 1 }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            toast(data.message || 'Could not add item');
+            return;
+          }
+          toast('Added to cart');
+          renderCart(data.cart);
+        });
+      });
+    }
+
+    function renderCart(cart) {
+      document.getElementById('cartToggle').textContent = `Cart (${cart.itemCount})`;
+      const list = document.getElementById('cartItems');
+      if (!cart.items.length) {
+        list.innerHTML = '<p class="meta">Cart is empty.</p>';
+      } else {
+        list.innerHTML = cart.items.map((item) => `
+          <div class="cart-row">
+            <img src="${item.image}" alt="${item.name}" />
+            <div>
+              <strong>${item.name}</strong><br />
+              <span class="meta">${item.color} · Size ${item.size} · Qty ${item.quantity}</span><br />
+              <span>$${(item.price * item.quantity).toFixed(2)}</span>
+            </div>
+            <button class="remove" data-id="${item.id}">Remove</button>
+          </div>
+        `).join('');
+      }
+      document.getElementById('cartSubtotal').textContent = `Subtotal: $${cart.subtotal.toFixed(2)}`;
+
+      list.querySelectorAll('.remove').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const res = await fetch(`${api}/cart/items/${btn.dataset.id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) {
+            toast(data.message || 'Could not remove item');
+            return;
+          }
+          renderCart(data.cart);
+          toast('Removed from cart');
+        });
+      });
+    }
+
+    async function loadCart() {
+      const cart = await fetch(`${api}/cart`).then((r) => r.json());
+      renderCart(cart);
+    }
+
+    async function loadShipping() {
+      const data = await fetch(`${api}/shipping`).then((r) => r.json());
+      if (!data.address) return;
+      const form = document.getElementById('shippingForm');
+      Object.entries(data.address).forEach(([key, value]) => {
+        if (form.elements[key] && value != null) form.elements[key].value = value;
+      });
+    }
+
+    document.getElementById('cartToggle').addEventListener('click', () => {
+      document.getElementById('cartPanel').classList.toggle('open');
+    });
+
+    document.getElementById('saveShipping').addEventListener('click', async () => {
+      const form = document.getElementById('shippingForm');
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const res = await fetch(`${api}/shipping/address`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast(data.message || 'Could not save address');
+        return;
+      }
+      toast('Shipping address saved');
+    });
+
+    document.getElementById('purchaseBtn').addEventListener('click', async () => {
+      const form = document.getElementById('shippingForm');
+      const payload = Object.fromEntries(new FormData(form).entries());
+      await fetch(`${api}/shipping/address`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const res = await fetch(`${api}/checkout/purchase`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        toast(data.message || 'Purchase failed');
+        document.getElementById('orderResult').textContent = JSON.stringify(data, null, 2);
+        return;
+      }
+      document.getElementById('orderResult').textContent = JSON.stringify(data.order, null, 2);
+      toast('Purchase complete (mock)');
+      await loadCart();
+    });
+
+    loadProducts();
+    loadCart();
+    loadShipping();
+  </script>
+</body>
+</html>

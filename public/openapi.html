@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenAPI JSON · Nike Shop</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --ink: #111;
+      --muted: #666;
+      --line: #e5e5e5;
+      --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      background: #111;
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    nav {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    nav a, .btn {
+      color: #111;
+      background: #fff;
+      text-decoration: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+    }
+    nav a.ghost {
+      background: transparent;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      flex: 1;
+    }
+    .btn-primary {
+      background: #111;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    pre {
+      margin: 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.25rem;
+      overflow: auto;
+      max-height: calc(100vh - 220px);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: #111;
+      color: #fff;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nike Shop</h1>
+    <nav>
+      <a class="ghost" href="/">Shop</a>
+      <a href="/openapi.html">OpenAPI JSON</a>
+      <a class="ghost" href="/api" target="_blank" rel="noopener">Swagger UI</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <p class="meta" id="status">Loading OpenAPI document…</p>
+      <button type="button" class="btn-primary" id="copyBtn" disabled>Copy JSON</button>
+      <button type="button" class="btn-primary" id="downloadBtn" disabled>Download</button>
+    </div>
+    <pre id="jsonOut">{}</pre>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let openApiText = '';
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
+    }
+
+    async function loadSpec() {
+      const status = document.getElementById('status');
+      const out = document.getElementById('jsonOut');
+      try {
+        const res = await fetch('/api-json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        openApiText = JSON.stringify(data, null, 2);
+        out.textContent = openApiText;
+        status.textContent = `OpenAPI ${data.openapi || '3.x'} · ${data.info?.title || 'API'} · source /api-json`;
+        document.getElementById('copyBtn').disabled = false;
+        document.getElementById('downloadBtn').disabled = false;
+      } catch (err) {
+        status.innerHTML = `<span class="error">Failed to load /api-json: ${err.message}</span>`;
+        out.textContent = '';
+      }
+    }
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(openApiText);
+        toast('OpenAPI JSON copied');
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(document.getElementById('jsonOut'));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        toast('Select the JSON and copy manually');
+      }
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const blob = new Blob([openApiText], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nike-shop-openapi.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Download started');
+    });
+
+    loadSpec();
+  </script>
+</body>
+</html>
