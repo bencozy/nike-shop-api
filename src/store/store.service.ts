@@ -24,14 +24,34 @@ export class StoreService {
     return this.products.find((p) => p.id === id);
   }
 
-  searchProductsByName(name?: string): Product[] {
-    const query = name?.trim().toLowerCase();
-    if (!query) {
-      return this.products;
-    }
-    return this.products.filter((product) =>
-      product.name.toLowerCase().includes(query),
-    );
+  searchProducts(filters: {
+    q?: string;
+    color?: string;
+  }): Product[] {
+    const q = filters.q?.trim().toLowerCase();
+    const color = filters.color?.trim().toLowerCase();
+
+    return this.products.filter((product) => {
+      if (
+        color &&
+        !product.colors.some((c) => c.toLowerCase().includes(color))
+      ) {
+        return false;
+      }
+      if (q) {
+        const haystack = [
+          product.name,
+          product.description,
+          ...product.colors,
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
   getCart(): CartItem[] {

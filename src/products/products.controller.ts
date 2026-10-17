@@ -14,15 +14,27 @@ export class ProductsController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search products by name' })
-  @ApiQuery({
-    name: 'name',
-    required: true,
-    example: 'air',
-    description: 'Product name to search for (partial match)',
+  @ApiOperation({
+    summary: 'Search products by text and/or color',
   })
-  search(@Query('name') name?: string) {
-    return this.store.searchProductsByName(name);
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    example: 'air',
+    description: 'Matches name, description, or colors',
+  })
+  @ApiQuery({
+    name: 'color',
+    required: false,
+    example: 'Black',
+  })
+  search(@Query('q') q?: string, @Query('color') color?: string) {
+    const results = this.store.searchProducts({ q, color });
+    return {
+      query: { q: q ?? null, color: color ?? null },
+      count: results.length,
+      results,
+    };
   }
 
   @Get(':id')
