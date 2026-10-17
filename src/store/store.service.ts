@@ -24,40 +24,14 @@ export class StoreService {
     return this.products.find((p) => p.id === id);
   }
 
-  searchProducts(filters: {
-    q?: string;
-    category?: string;
-    color?: string;
-  }): Product[] {
-    const q = filters.q?.trim().toLowerCase();
-    const category = filters.category?.trim().toLowerCase();
-    const color = filters.color?.trim().toLowerCase();
-
-    return this.products.filter((product) => {
-      if (category && product.category.toLowerCase() !== category) {
-        return false;
-      }
-      if (
-        color &&
-        !product.colors.some((c) => c.toLowerCase().includes(color))
-      ) {
-        return false;
-      }
-      if (q) {
-        const haystack = [
-          product.name,
-          product.description,
-          product.category,
-          ...product.colors,
-        ]
-          .join(' ')
-          .toLowerCase();
-        if (!haystack.includes(q)) {
-          return false;
-        }
-      }
-      return true;
-    });
+  searchProductsByName(name?: string): Product[] {
+    const query = name?.trim().toLowerCase();
+    if (!query) {
+      return this.products;
+    }
+    return this.products.filter((product) =>
+      product.name.toLowerCase().includes(query),
+    );
   }
 
   getCart(): CartItem[] {
